@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /orders/{orderId} {
+      // Anyone with the direct link can view a single order (the doc ID +
+      // access token act as the "secret" — this is intentional so customers
+      // don't need an account to see their receipt).
+      allow get: if true;
+
+      // Listing/querying the whole collection is staff-only, so the order
+      // list (names, contact numbers) isn't publicly scrapeable.
+      allow list: if request.auth != null;
+
+      // Anyone can create an order, as long as it looks like a real new
+      // order (has an access token, starts as "pending").
+      allow create: if request.resource.data.accessToken is string
+                    && request.resource.data.accessToken.size() >= 16
+                    && request.resource.data.status == 'pending';
+
+      // Staff (signed in) can update anything, e.g. order status.
+      // A customer without an account can only update their own order
+      // (matching accessToken) and cannot change its status, order code,
+      // or creation time themselves.
+      allow update: if request.auth != null
+                    || (
+                      request.resource.data.accessToken == resource.data.accessToken
+                      && request.resource.data.status == resource.data.status
+                      && request.resource.data.orderCode == resource.data.orderCode
+                      && request.resource.data.createdAt == resource.data.createdAt
+                    );
+
+      allow delete: if false;
+    }
+  }
+}

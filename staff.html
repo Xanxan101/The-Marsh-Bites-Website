@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kitchen Dashboard — The Marsh Bites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="home.html" class="nav-logo">
+      <div class="mascot sm"><div class="mascot-inner">
+        <div class="mascot-face"></div>
+        <div class="mascot-eyebrow l"></div><div class="mascot-eyebrow r"></div>
+        <div class="mascot-eye l"></div><div class="mascot-eye r"></div>
+        <div class="mascot-mouth"></div>
+      </div></div>
+      <div class="nav-logo-text">The Marsh Bites</div>
+    </a>
+    <div class="nav-links">
+      <span class="staff-email" id="staff-email"></span>
+      <button class="btn-outline-order sm" id="sign-out-btn">Sign Out</button>
+    </div>
+  </nav>
+
+  <section class="order-hero">
+    <h1>Kitchen Dashboard</h1>
+    <p>Live orders — updates as customers place or edit them 🍡</p>
+  </section>
+
+  <section class="staff-layout">
+    <div class="filter-tabs">
+      <button class="filter-tab selected" data-status="all">All <span class="count">0</span></button>
+      <button class="filter-tab" data-status="pending">Pending <span class="count">0</span></button>
+      <button class="filter-tab" data-status="preparing">Preparing <span class="count">0</span></button>
+      <button class="filter-tab" data-status="ready">Ready <span class="count">0</span></button>
+      <button class="filter-tab" data-status="completed">Completed <span class="count">0</span></button>
+      <button class="filter-tab" data-status="cancelled">Cancelled <span class="count">0</span></button>
+    </div>
+
+    <p class="orders-empty" id="orders-empty">No orders here yet.</p>
+    <div class="orders-list" id="orders-list"></div>
+  </section>
+
+<script type="module" src="js/staff.js"></script>
+</body>
+</html>

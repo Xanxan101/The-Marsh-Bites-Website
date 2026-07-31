@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Order — The Marsh Bites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="home.html" class="nav-logo">
+      <div class="mascot sm"><div class="mascot-inner">
+        <div class="mascot-face"></div>
+        <div class="mascot-eyebrow l"></div><div class="mascot-eyebrow r"></div>
+        <div class="mascot-eye l"></div><div class="mascot-eye r"></div>
+        <div class="mascot-mouth"></div>
+      </div></div>
+      <div class="nav-logo-text">The Marsh Bites</div>
+    </a>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">Home</a>
+      <a href="menu.html" class="nav-link">Menu</a>
+      <a href="order.html" class="nav-link">Order</a>
+      <a href="contact.html" class="nav-link">Contact</a>
+      <a href="order.html" class="nav-cta">Order Now</a>
+    </div>
+  </nav>
+
+  <section class="order-hero">
+    <h1>Your Order</h1>
+    <p>Here's what we received — thank you! 🎉</p>
+  </section>
+
+  <section class="receipt-layout">
+    <p class="receipt-loading" id="receipt-loading">Loading your order…</p>
+    <div class="receipt-not-found" id="receipt-not-found" style="display:none;">
+      <p>We couldn't find that order. Double-check the link, or place a new one.</p>
+      <a href="order.html" class="btn btn-pink">Order Now →</a>
+    </div>
+
+    <div class="receipt-card" id="receipt-card" style="display:none;">
+      <div class="receipt-top">
+        <div>
+          <div class="receipt-code" id="r-code"></div>
+          <div class="receipt-created" id="r-created"></div>
+        </div>
+        <span class="status-badge" id="r-status"></span>
+      </div>
+      <p class="receipt-edited-note" id="r-edited-row" style="display:none;"><span id="r-edited"></span></p>
+
+      <div class="receipt-section">
+        <h3>Customer</h3>
+        <div class="receipt-row"><span>Name</span><span id="r-name"></span></div>
+        <div class="receipt-row"><span>Contact</span><span id="r-contact"></span></div>
+      </div>
+
+      <div class="receipt-section">
+        <h3>Fulfillment</h3>
+        <div class="receipt-row"><span>Method</span><span id="r-fulfillment"></span></div>
+        <div class="receipt-row" id="r-address-row"><span>Address</span><span id="r-address"></span></div>
+        <div class="receipt-row"><span>Date / Time</span><span id="r-datetime"></span></div>
+        <div class="receipt-row"><span>Payment</span><span id="r-payment"></span></div>
+      </div>
+
+      <div class="receipt-section">
+        <h3>Items</h3>
+        <div class="summary-lines" id="r-items" style="max-height:none;"></div>
+        <div class="receipt-row"><span>Items Total</span><span id="r-items-total"></span></div>
+        <div class="receipt-row" id="r-fee-row"><span>Delivery Fee</span><span id="r-fee"></span></div>
+        <div class="receipt-row receipt-total"><span>Total</span><span id="r-total"></span></div>
+      </div>
+
+      <div class="receipt-section" id="r-notes-row" style="display:none;">
+        <h3>Notes</h3>
+        <p id="r-notes" class="receipt-notes"></p>
+      </div>
+
+      <div class="receipt-actions">
+        <a href="#" id="r-edit-btn" class="btn-place-order" style="display:none;">✏️ Edit Order</a>
+        <a href="#" id="r-more-btn" class="btn-outline-order">🍡 Order More</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">The Marsh Bites</div>
+      <div class="footer-links">
+        <a href="https://facebook.com/themarshbites" target="_blank">Facebook</a>
+        <a href="https://instagram.com/themarshbites" target="_blank">Instagram</a>
+        <a href="contact.html">Contact</a>
+        <a href="staff-login.html">Staff</a>
+      </div>
+    </div>
+    <div class="footer-copy">© 2026 The Marsh Bites · San Pablo, Laguna</div>
+  </footer>
+<script type="module" src="js/receipt.js"></script>
+</body>
+</html>

@@ -1,71 +1,41 @@
-const FLAVORS = [
-  {
-    "key": "f0",
-    "name": "Cookies & Cream"
-  },
-  {
-    "key": "f1",
-    "name": "Blueberry Sour Strips"
-  },
-  {
-    "key": "f2",
-    "name": "Strawberry Cheesecake"
-  },
-  {
-    "key": "f3",
-    "name": "Mint Choco"
-  },
-  {
-    "key": "f4",
-    "name": "Caramel Macchiato Biscoff"
-  },
-  {
-    "key": "f5",
-    "name": "Bubblegum Pop"
-  },
-  {
-    "key": "f6",
-    "name": "Peach Mango Yogurt"
-  },
-  {
-    "key": "f7",
-    "name": "Double Choco"
-  },
-  {
-    "key": "f8",
-    "name": "Matcha"
-  },
-  {
-    "key": "f9",
-    "name": "Mango Graham"
-  }
-];
+import { FLAVORS, computeTotals } from './js/flavors.js';
+import { createOrder, updateOrder, getOrder } from './js/orders.js';
 
 const state = {
   fulfillment: 'pickup', payment: 'gcash', qty: {}, assortedQty: 0,
 };
 
+let editMode = null; // { id, token, orderCode }
+
 function pillClass(btn, selected) {
   btn.classList.toggle('selected', selected);
 }
 
-function computeTotals() {
-  let totalUnits = 0;
-  FLAVORS.forEach(f => { totalUnits += state.qty[f.key] || 0; });
-  const fours = Math.floor(totalUnits / 4);
-  let rem = totalUnits % 4;
-  const twos = Math.floor(rem / 2);
-  const ones = rem % 2;
-  let total = fours * 570 + twos * 290 + ones * 149;
-  if (state.fulfillment === 'delivery' && (totalUnits + state.assortedQty) > 0) total += 50;
-  return { totalUnits, total };
+function buildOrderPayload() {
+  const { totalUnits, itemsTotal, deliveryFee, total } = computeTotals(state.qty, state.assortedQty, state.fulfillment);
+  const items = FLAVORS.filter(f => (state.qty[f.key] || 0) > 0).map(f => ({ key: f.key, name: f.name, qty: state.qty[f.key] }));
+  return {
+    customer: {
+      name: document.getElementById('in-name').value.trim(),
+      contact: document.getElementById('in-contact').value.trim(),
+    },
+    fulfillment: state.fulfillment,
+    address: state.fulfillment === 'delivery' ? document.getElementById('in-address').value.trim() : '',
+    date: document.getElementById('in-date').value,
+    time: document.getElementById('in-time').value,
+    payment: state.payment,
+    items,
+    assortedQty: state.assortedQty,
+    notes: document.getElementById('in-notes').value.trim(),
+    pricing: { totalUnits, itemsTotal, deliveryFee, total },
+  };
 }
 
 function buildSummaryText() {
   const lines = [];
   FLAVORS.forEach(f => { if (state.qty[f.key]) lines.push(`${f.name} x${state.qty[f.key]}`); });
   if (state.assortedQty) lines.push(`Assorted Pack x${state.assortedQty} (pricing TBD)`);
-  const { total } = computeTotals();
+  const { total } = computeTotals(state.qty, state.assortedQty, state.fulfillment);
   const name = document.getElementById('in-name').value;
   const contact = document.getElementById('in-contact').value;
   const address = document.getElementById('in-address').value;
@@ -89,7 +59,7 @@ function buildSummaryText() {
 }
 
 function render() {
-  const { totalUnits, total } = computeTotals();
+  const { totalUnits, total } = computeTotals(state.qty, state.assortedQty, state.fulfillment);
   const linesEl = document.getElementById('summary-lines');
   linesEl.innerHTML = '';
   FLAVORS.forEach(f => {
@@ -151,8 +121,27 @@ document.getElementById('btn-cash').addEventListener('click', () => {
   pillClass(document.getElementById('btn-cash'), true);
 });
 
-['in-name','in-contact','in-address','in-date','in-time','in-notes'].forEach(id => {
+['in-name','in-contact','in-address','in-date','in-time'].forEach(id => {
   document.getElementById(id).addEventListener('input', render);
+});
+
+const NOTES_WORD_LIMIT = 200;
+const notesEl = document.getElementById('in-notes');
+const notesCountEl = document.getElementById('notes-count');
+
+function updateNotesCount() {
+  const words = notesEl.value.trim().split(/\s+/).filter(Boolean);
+  notesCountEl.textContent = `${words.length} / ${NOTES_WORD_LIMIT} words`;
+  notesCountEl.classList.toggle('limit', words.length >= NOTES_WORD_LIMIT);
+}
+
+notesEl.addEventListener('input', () => {
+  const words = notesEl.value.split(/\s+/).filter(Boolean);
+  if (words.length > NOTES_WORD_LIMIT) {
+    notesEl.value = words.slice(0, NOTES_WORD_LIMIT).join(' ');
+  }
+  updateNotesCount();
+  render();
 });
 
 document.getElementById('btn-copy').addEventListener('click', () => {
@@ -163,4 +152,91 @@ document.getElementById('btn-copy').addEventListener('click', () => {
   setTimeout(() => msg.classList.remove('show'), 4000);
 });
 
-render();
+// --- Place / update order against Firebase ---
+const placeBtn = document.getElementById('btn-place-order');
+const placeMsg = document.getElementById('place-order-msg');
+
+function validate(payload) {
+  if (!payload.customer.name) return 'Please enter your name.';
+  if (!payload.customer.contact) return 'Please enter a contact number.';
+  if (payload.fulfillment === 'delivery' && !payload.address) return 'Please enter a delivery address.';
+  if (!payload.date || !payload.time) return 'Please pick a preferred date and time.';
+  if (payload.items.length === 0 && payload.assortedQty === 0) return 'Please choose at least one flavor.';
+  return null;
+}
+
+placeBtn.addEventListener('click', async () => {
+  const payload = buildOrderPayload();
+  const err = validate(payload);
+  if (err) {
+    placeMsg.textContent = err;
+    placeMsg.classList.add('show');
+    return;
+  }
+  placeMsg.classList.remove('show');
+  placeBtn.disabled = true;
+  placeBtn.textContent = editMode ? 'Updating…' : 'Placing Order…';
+  try {
+    if (editMode) {
+      await updateOrder(editMode.id, editMode.token, payload);
+      window.location.href = `receipt.html?id=${editMode.id}&t=${editMode.token}`;
+    } else {
+      const { id, accessToken } = await createOrder(payload);
+      localStorage.setItem('mb_last_order', JSON.stringify({ id, token: accessToken }));
+      window.location.href = `receipt.html?id=${id}&t=${accessToken}`;
+    }
+  } catch (e) {
+    placeMsg.textContent = "Couldn't send your order — please check your connection and try again, or message us on Facebook.";
+    placeMsg.classList.add('show');
+    placeBtn.disabled = false;
+    placeBtn.textContent = editMode ? '✏️ Update Order' : '✅ Place Order';
+  }
+});
+
+async function initEditMode() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('edit');
+  const token = params.get('t');
+  const banner = document.getElementById('edit-banner');
+
+  if (id && token) {
+    try {
+      const order = await getOrder(id);
+      if (order && order.accessToken === token) {
+        editMode = { id, token, orderCode: order.orderCode };
+        document.getElementById('in-name').value = order.customer?.name || '';
+        document.getElementById('in-contact').value = order.customer?.contact || '';
+        document.getElementById('in-address').value = order.address || '';
+        document.getElementById('in-date').value = order.date || '';
+        document.getElementById('in-time').value = order.time || '';
+        document.getElementById('in-notes').value = order.notes || '';
+        updateNotesCount();
+        state.fulfillment = order.fulfillment || 'pickup';
+        state.payment = order.payment || 'gcash';
+        state.assortedQty = order.assortedQty || 0;
+        (order.items || []).forEach(it => { state.qty[it.key] = it.qty; });
+
+        pillClass(document.getElementById('btn-pickup'), state.fulfillment === 'pickup');
+        pillClass(document.getElementById('btn-delivery'), state.fulfillment === 'delivery');
+        document.getElementById('address-block').style.display = state.fulfillment === 'delivery' ? 'block' : 'none';
+        pillClass(document.getElementById('btn-gcash'), state.payment === 'gcash');
+        pillClass(document.getElementById('btn-cash'), state.payment === 'cash');
+        FLAVORS.forEach(f => { document.getElementById('qty-' + f.key).textContent = state.qty[f.key] || 0; });
+        document.getElementById('qty-assorted').textContent = state.assortedQty;
+
+        placeBtn.textContent = '✏️ Update Order';
+        banner.textContent = `Editing order ${order.orderCode} — saving will update your existing order.`;
+        banner.classList.add('show');
+      } else {
+        banner.textContent = "We couldn't find that order to edit, so here's a blank form instead.";
+        banner.classList.add('show');
+      }
+    } catch (e) {
+      banner.textContent = "Couldn't load that order right now — here's a blank form instead.";
+      banner.classList.add('show');
+    }
+  }
+  render();
+}
+
+initEditMode();

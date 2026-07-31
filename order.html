@@ -34,6 +34,8 @@
     <p>Fill it out, we'll get your order details right away 💌</p>
   </section>
 
+  <p class="edit-banner" id="edit-banner"></p>
+
   <section class="order-layout">
     <div class="order-form">
 
@@ -166,7 +168,8 @@
 
       <div class="form-card">
         <h3>5. Special Notes</h3>
-        <textarea id="in-notes" placeholder="Allergies, gift note, anything else we should know..."></textarea>
+        <textarea id="in-notes" placeholder="Allergies, gift note, anything else we should know..." style="resize:none;"></textarea>
+        <span class="notes-count" id="notes-count">0 / 200 words</span>
       </div>
 
     </div>
@@ -179,6 +182,9 @@
         <div class="summary-total" id="summary-total" style="display:none;">
           <span class="label">Total</span><span class="value" id="summary-total-val">₱0</span>
         </div>
+        <button class="btn-place-order" id="btn-place-order">✅ Place Order</button>
+        <p class="place-order-msg" id="place-order-msg"></p>
+        <p class="summary-divider">or reach us directly</p>
         <a href="#" class="btn-email" id="btn-email">📩 Send Order via Email</a>
         <button class="btn-copy" id="btn-copy">📋 Copy Order Details</button>
         <a href="https://facebook.com/themarshbites" target="_blank" class="btn-messenger">Message us on Facebook</a>
@@ -194,10 +200,11 @@
         <a href="https://facebook.com/themarshbites" target="_blank">Facebook</a>
         <a href="https://instagram.com/themarshbites" target="_blank">Instagram</a>
         <a href="contact.html">Contact</a>
+        <a href="staff-login.html">Staff</a>
       </div>
     </div>
     <div class="footer-copy">© 2026 The Marsh Bites · San Pablo, Laguna</div>
   </footer>
-<script src="order.js"></script>
+<script type="module" src="order.js"></script>
 </body>
 </html>
